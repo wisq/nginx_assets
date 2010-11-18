@@ -1,0 +1,44 @@
+worker_processes  1;
+
+error_log  <%= NGINX_ROOT %>/log/error.log;
+pid        <%= NGINX_PID %>;
+
+events {
+    worker_connections  100;
+}
+
+
+http {
+    include       <%= NGINX_ROOT %>/conf/mime.types;
+    default_type  application/octet-stream;
+
+    client_body_temp_path <%= NGINX_ROOT %>/tmp/client_body_temp;
+    proxy_temp_path       <%= NGINX_ROOT %>/tmp/proxy_temp;
+    fastcgi_temp_path     <%= NGINX_ROOT %>/tmp/fastcgi_temp;
+    uwsgi_temp_path       <%= NGINX_ROOT %>/tmp/uwsgi_temp;
+    scgi_temp_path        <%= NGINX_ROOT %>/tmp/scgi_temp;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    sendfile on;
+
+    <% @instances.each do |instance| %>
+    server {
+        listen <%= instance.listen_on %>;
+
+        access_log  <%= NGINX_ROOT %>/log/access.<%= instance.name %>.log  main;
+
+        location / {
+            root  <%= instance.assets_path %>;
+            index index.html;
+
+            <% if instance.proxy? %>
+            if (!-f $request_filename) { proxy_pass http://<%= instance.proxy_to %>; }
+            <% end %>
+        }
+    }
+    <% end %>
+
+}

@@ -1,0 +1,5 @@
+/conf/config.yml
+/conf/nginx.conf
+/run/*.pid
+/log/*.log
+/tmp/*_temp

@@ -1,0 +1,13 @@
+:alpha:
+  :listen_on: localhost:3005
+  :proxy_to:  localhost:3000
+  :assets_path: ~/Code/Ruby/alpha/public
+
+:beta:
+  :listen_on: 3006
+  :proxy_to:  localhost:3001
+  :assets_path: /path/to/beta/public
+
+:charlie:
+  :listen_on: localhost:3007
+  :assets_path: ~charlie/stuff

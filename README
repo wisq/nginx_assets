@@ -1,0 +1,74 @@
+Description
+-----------
+
+nginx_assets is a little project I put together to act as a local, fast assets
+server for Rails projects.
+
+The first time you run "rake", it will generate a stock configuration for you.
+Edit the conf/config.yml file and set up your instances.  You can define as
+many as you like, as long as they listen on different ports.
+
+Note that it's up to you to configure your Rails application to use the nginx
+instance as an assets server.  Alternatively, you can just use the nginx 
+server as a proxying front-end to your Rails application.
+
+You will need to install nginx separately and ensure it's in your $PATH.
+You can do "sudo port install nginx" with Macports on OSX, "sudo apt-get
+install nginx" on Debian Linux derivatives, etc.
+
+
+Commands
+--------
+
+rake start
+    Generates configuration (from conf/config.yml) and starts nginx.
+
+rake stop
+    Shuts down the current running nginx.
+
+rake reload
+    Generates a new configuration file and signals nginx to load it.
+
+rake restart
+    Shuts down nginx, generates a new configuration, and restarts it.
+    Equivalent to "rake stop start".
+
+
+Configuration
+-------------
+
+:my_app:
+  :listen_on: 3005
+  :assets_path: /path/to/my_app/public
+  
+Here's an example of how to configure my_app, residing in /path/to/my_app,
+with the assets server running on 3005.  Note that we have to add "/public" at
+the end, since that's where Rails' static files are stored.
+
+Because we only specified a port for :listen_on, anyone who can reach port
+3005 on your computer can read your assets (e.g. for doing a demo over a LAN).
+And because we didn't specify :proxy_to, all requests for nonexistent files
+will return HTTP 404 errors.
+
+
+:other_app:
+  :listen_on: localhost:3010
+  :proxy_to:  localhost:3000
+  :assets_path: ~/Code/Ruby/other_app/public
+
+Here's an example of configuring other_app, residing in "Code/Ruby/other_app"
+under your home directory ("~").  Here we've added a hostname to :listen_to,
+binding it to "localhost" so that it can only be accessed by the local
+machine.
+
+If a file can't be found, nginx will forward the request to your application
+running on localhost port 3000 (:proxy_to).  This is useful if your production
+assets server is expected to do some special dynamic file serving that your
+Rails app emulates.  (But keep in mind that if _all_ your assets require Rails
+to serve them, you're not going to see any benefit from this!)
+
+Note that you can also browse directly to http://localhost:3010/ in this case
+and see your Rails application via nginx's proxying. In this case, you don't
+need to configure an assets server.  (Whether to use proxying or an assets
+server is up to you. For the sake of consistency, you probably want to do
+whatever your own app does when deployed to production.)
